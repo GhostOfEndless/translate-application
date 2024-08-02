@@ -1,11 +1,10 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:16.3
     container_name: $DB_CONTAINER_NAME
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - .env
     ports:
       - "${DB_PORT}:5432"
     environment:
@@ -13,16 +12,19 @@ services:
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_DB: $POSTGRES_DB
     healthcheck:
-      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
-      interval: 5s
+      test:
+        - "CMD-SHELL"
+        - "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"
+      interval: 3s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   app:
     build: .
     container_name: $APP_CONTAINER_NAME
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - .env
     ports:
       - "${APP_PORT}:8080"
     depends_on:
@@ -34,4 +36,4 @@ services:
       DB_NAME: $POSTGRES_DB
       DB_HOST: $DB_CONTAINER_NAME
       DB_PORT: $DB_PORT
-
+      API_KEY: $YANDEX_CLOUD_API_KEY

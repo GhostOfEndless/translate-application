@@ -1,0 +1,3 @@
+yandex:
+  cloud:
+    api-key: ${API_KEY}
