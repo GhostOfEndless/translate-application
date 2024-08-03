@@ -1,3 +1,4 @@
 yandex:
   cloud:
-    api-key: ${API_KEY}
+    api-key: ${YANDEX_CLOUD_API_KEY}
+    api-endpoint: ${YANDEX_CLOUD_API_ENDPOINT}
