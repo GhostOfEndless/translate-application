@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.exceptions.InvalidLanguageCodeException;
+import com.example.exceptions.ProcessedSymbolsLimitException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -66,6 +67,25 @@ public class BadRequestControllerAdvice {
                         .getMessage("translation.request.invalid_language.code", new Object[0],
                                 "translation.request.invalid_language.code", locale))
                 .replace("{code}", exception.getMessage());
+
+        problemDetail.setProperty("error", errorMessage);
+
+        return ResponseEntity.badRequest()
+                .body(problemDetail);
+    }
+
+    @ExceptionHandler(ProcessedSymbolsLimitException.class)
+    public ResponseEntity<ProblemDetail> handleProcessedCharacterLimitException(
+            ProcessedSymbolsLimitException exception, Locale locale) {
+        var problemDetail = ProblemDetail
+                .forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                        this.messageSource.getMessage("errors.400.title", new Object[0],
+                                "errors.400.title", locale));
+
+        var errorMessage = Objects.requireNonNull(this.messageSource.getMessage(
+                        "translation.request.processed_symbols_limit_exceed", new Object[0],
+                        "translation.request.processed_symbols_limit_exceed", locale))
+                .replace("{limit}", String.valueOf(exception.getSymbolsLimit()));
 
         problemDetail.setProperty("error", errorMessage);
 

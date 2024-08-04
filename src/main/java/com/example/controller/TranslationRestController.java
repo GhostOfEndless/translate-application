@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.client.payload.Translation;
 import com.example.controller.payload.TranslationRequestPayload;
 import com.example.exceptions.InvalidLanguageCodeException;
+import com.example.exceptions.ProcessedSymbolsLimitException;
 import com.example.service.TranslationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -32,7 +33,7 @@ public class TranslationRestController {
     public ResponseEntity<Translation> translateText(@Valid @RequestBody TranslationRequestPayload payload,
                                                      BindingResult bindingResult,
                                                      HttpServletRequest request)
-            throws BindException, InvalidLanguageCodeException {
+            throws BindException, InvalidLanguageCodeException, ProcessedSymbolsLimitException {
         if (bindingResult.hasErrors()) {
             if (bindingResult instanceof BindException exception) {
                 throw exception;

@@ -2,8 +2,9 @@ yandex:
   cloud:
     api-key: ${YANDEX_CLOUD_API_KEY}
     api-endpoint: ${YANDEX_CLOUD_API_ENDPOINT}
-    limit: 20 # requests per second
+    requests-limit: 20 # requests per second
+    symbols-limit: 1_000_000
 
 translation:
   service:
-    threads: 10 # threads on pool, which makes requests to Yandex.Cloud
+    threads: 10 # threads on pool, which make requests to Yandex.Cloud

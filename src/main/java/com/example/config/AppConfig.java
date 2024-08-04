@@ -24,8 +24,13 @@ public class AppConfig {
     }
 
     @Bean
-    public Integer requestsLimit(@Value("${yandex.cloud.limit}") Integer requestsLimit) {
+    public Integer requestsLimit(@Value("${yandex.cloud.requests-limit}") Integer requestsLimit) {
         return requestsLimit;
+    }
+
+    @Bean
+    public Integer symbolsLimit(@Value("${yandex.cloud.symbols-limit}") Integer symbolsLimit) {
+        return symbolsLimit;
     }
 
     @Bean
