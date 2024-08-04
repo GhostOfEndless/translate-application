@@ -2,7 +2,6 @@ package com.example.client;
 
 import com.example.client.payload.AvailableLanguagesResponsePayload;
 import com.example.client.payload.Language;
-import com.example.client.payload.Translation;
 import com.example.client.payload.TranslationResponsePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,8 @@ public class YandexCloudRestClientImpl implements YandexCloudRestClient {
     private final RestTemplate restTemplate;
 
     @Override
-    public Translation translateText(String sourceLanguageCode, String targetLanguageCode, String text) {
+    public String translateText(String sourceLanguageCode, String targetLanguageCode, String text) {
+        log.info("Text: {}", text);
         var requestBody = new HashMap<>();
         requestBody.put("sourceLanguageCode", sourceLanguageCode);
         requestBody.put("targetLanguageCode", targetLanguageCode);
@@ -42,10 +42,10 @@ public class YandexCloudRestClientImpl implements YandexCloudRestClient {
 
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
                 && response.getBody().translations() != null) {
-            return response.getBody().translations().getFirst();
+            return response.getBody().translations().getFirst().text();
         }
 
-        return new Translation("error while getting translation");
+        return null;
     }
 
     @Override

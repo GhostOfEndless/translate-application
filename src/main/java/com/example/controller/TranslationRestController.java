@@ -42,8 +42,8 @@ public class TranslationRestController {
         }
 
         var response = this.translationService.translate(
-                payload.sourceLanguageCode(),
-                payload.targetLanguageCode(),
+                payload.sourceLanguageCode().toLowerCase(),
+                payload.targetLanguageCode().toLowerCase(),
                 payload.text());
 
         log.info("Request body: {}", payload);

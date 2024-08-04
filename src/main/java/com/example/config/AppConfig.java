@@ -22,4 +22,14 @@ public class AppConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+
+    @Bean
+    public Integer requestsLimit(@Value("${yandex.cloud.limit}") Integer requestsLimit) {
+        return requestsLimit;
+    }
+
+    @Bean
+    public Integer translationPoolThreads(@Value("${translation.service.threads}") Integer translationPoolThreads) {
+        return translationPoolThreads;
+    }
 }
