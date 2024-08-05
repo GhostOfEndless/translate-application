@@ -4,8 +4,10 @@ import com.example.client.YandexCloudRestClient;
 import com.example.client.payload.LanguagePayload;
 import com.example.client.payload.TranslationPayload;
 import com.example.entity.Translation;
+import com.example.exceptions.AvailableLanguagesException;
 import com.example.exceptions.InvalidLanguageCodeException;
 import com.example.exceptions.ProcessedSymbolsLimitException;
+import com.example.exceptions.ServiceUnavailableException;
 import com.example.repository.TranslationRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -14,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -33,18 +34,16 @@ public class TranslationServiceImpl implements TranslationService {
     private final Integer translationPoolThreadsNum;
     private final Integer requestsLimit;
     private final Integer symbolsLimit;
+    private final Set<String> availableLanguages = new HashSet<>();
     private ExecutorService translationPool;
     private ScheduledExecutorService semaphoreReleasingPool;
     private ScheduledExecutorService symbolsLimitReleasingPool;
     private AtomicInteger availableSymbols;
     private Semaphore semaphore;
-    private Set<String> availableLanguages;
 
     @PostConstruct
     private void init() {
-        this.availableLanguages = new HashSet<>(
-                this.restClient.getAvailableLanguages().stream().map(LanguagePayload::code).toList()
-        );
+        fetchAvailableLanguagesAsync();
 
         this.semaphore = new Semaphore(this.requestsLimit);
         this.availableSymbols = new AtomicInteger(this.symbolsLimit);
@@ -54,6 +53,23 @@ public class TranslationServiceImpl implements TranslationService {
         this.symbolsLimitReleasingPool = Executors.newSingleThreadScheduledExecutor();
 
         runScheduledThreads();
+    }
+
+    private void fetchAvailableLanguagesAsync() {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return this.restClient.getAvailableLanguages();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                return null;
+            }
+        }).thenAccept(languages -> {
+            if (languages != null) {
+                synchronized (this.availableLanguages) {
+                    this.availableLanguages.addAll(languages.stream().map(LanguagePayload::code).toList());
+                }
+            }
+        });
     }
 
     private void runScheduledThreads() {
@@ -84,8 +100,8 @@ public class TranslationServiceImpl implements TranslationService {
     public TranslationPayload translate(String clientIP, Timestamp requestTimestamp,
                                         String sourceLanguageCode, String targetLanguageCode, String sourceText)
             throws InvalidLanguageCodeException, ProcessedSymbolsLimitException {
-        if (availableLanguages == null || availableLanguages.isEmpty()) {
-            throw new RestClientException("");
+        if (availableLanguages.isEmpty()) {
+            throw new AvailableLanguagesException();
         }
         if (!this.availableLanguages.contains(sourceLanguageCode)) {
             throw new InvalidLanguageCodeException(sourceLanguageCode);
@@ -144,7 +160,7 @@ public class TranslationServiceImpl implements TranslationService {
                         synchronized (results) {
                             results[index] = result;
                         }
-                    } catch (RestClientException | InterruptedException e) {
+                    } catch (InterruptedException | RuntimeException e) {
                         log.error(e.getMessage());
                     }
                 }, this.translationPool))
@@ -152,6 +168,9 @@ public class TranslationServiceImpl implements TranslationService {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
+        if (Arrays.stream(results).anyMatch(Objects::isNull)) {
+            throw new ServiceUnavailableException();
+        }
         return results;
     }
 

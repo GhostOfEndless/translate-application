@@ -9,6 +9,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -36,12 +37,20 @@ public class YandexCloudRestClientImpl implements YandexCloudRestClient {
         headers.add("Authorization", "Api-Key " + this.apiKey);
         var request = new HttpEntity<>(requestBody, headers);
 
-        var response = this.restTemplate.postForEntity(this.apiEndpoint + "/translate", request,
-                TranslationResponsePayload.class);
+        try {
+            var response = this.restTemplate.postForEntity(this.apiEndpoint + "/translate", request,
+                    TranslationResponsePayload.class);
 
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
-                && response.getBody().translations() != null) {
-            return response.getBody().translations().getFirst().text();
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
+                    && response.getBody().translations() != null) {
+                return response.getBody().translations().getFirst().text();
+            }
+        } catch (HttpClientErrorException ex) {
+            if (ex.getStatusText().equals("Too Many Requests")) {
+                throw new RuntimeException(ex.getStatusText());
+            } else {
+                throw new RuntimeException("Invalid API Key: " + this.apiKey);
+            }
         }
 
         return null;
@@ -53,12 +62,20 @@ public class YandexCloudRestClientImpl implements YandexCloudRestClient {
         headers.add("Authorization", "Api-Key " + this.apiKey);
         var request = new HttpEntity<>(headers);
 
-        var response = this.restTemplate.postForEntity(this.apiEndpoint + "/languages", request,
-                AvailableLanguagesResponsePayload.class);
+        try {
+            var response = this.restTemplate.postForEntity(this.apiEndpoint + "/languages", request,
+                    AvailableLanguagesResponsePayload.class);
 
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
-                && response.getBody().languages() != null) {
-            return response.getBody().languages();
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
+                    && response.getBody().languages() != null) {
+                return response.getBody().languages();
+            }
+        } catch (HttpClientErrorException ex) {
+            if (ex.getStatusText().equals("Too Many Requests")) {
+                throw new RuntimeException(ex.getStatusText());
+            } else {
+                throw new RuntimeException("Invalid API Key: " + this.apiKey);
+            }
         }
 
         return new ArrayList<>();

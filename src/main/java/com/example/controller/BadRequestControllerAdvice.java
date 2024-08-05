@@ -1,7 +1,9 @@
 package com.example.controller;
 
+import com.example.exceptions.AvailableLanguagesException;
 import com.example.exceptions.InvalidLanguageCodeException;
 import com.example.exceptions.ProcessedSymbolsLimitException;
+import com.example.exceptions.ServiceUnavailableException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -88,6 +90,35 @@ public class BadRequestControllerAdvice {
                 .replace("{limit}", String.valueOf(exception.getSymbolsLimit()));
 
         problemDetail.setProperty("error", errorMessage);
+
+        return ResponseEntity.badRequest()
+                .body(problemDetail);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ProblemDetail> handleServiceUnavailableException(Locale locale) {
+        var problemDetail = ProblemDetail
+                .forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                        this.messageSource.getMessage("errors.400.title", new Object[0],
+                                "errors.400.title", locale));
+
+        problemDetail.setProperty("error", this.messageSource.getMessage("translation.request.connection_error",
+                new Object[0], "translation.request.connection_error", locale));
+
+        return ResponseEntity.badRequest()
+                .body(problemDetail);
+    }
+
+    @ExceptionHandler(AvailableLanguagesException.class)
+    public ResponseEntity<ProblemDetail> handleAvailableLanguagesException(Locale locale) {
+        var problemDetail = ProblemDetail
+                .forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                        this.messageSource.getMessage("errors.400.title", new Object[0],
+                                "errors.400.title", locale));
+
+        problemDetail.setProperty("error", this.messageSource.getMessage(
+                "translation.request.check_available_languages_error", new Object[0],
+                "translation.request.check_available_languages_error", locale));
 
         return ResponseEntity.badRequest()
                 .body(problemDetail);
