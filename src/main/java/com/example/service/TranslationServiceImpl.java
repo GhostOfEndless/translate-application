@@ -11,15 +11,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -102,6 +101,16 @@ public class TranslationServiceImpl implements TranslationService {
                 sourceText, translatedText);
 
         return new TranslationPayload(translatedText);
+    }
+
+    @Override
+    public Optional<Translation> findTranslation(Long id) {
+        return this.translationRepository.findById(id);
+    }
+
+    @Override
+    public Page<Translation> findAllTranslations(Pageable pageable) {
+        return this.translationRepository.findAll(pageable);
     }
 
     private String[] parseWords(String text) throws ProcessedSymbolsLimitException {

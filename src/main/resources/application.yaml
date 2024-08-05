@@ -12,11 +12,6 @@ translation:
   service:
     threads: ${TRANSLATION_SERVICE_THREADS} # threads on pool, which make requests to Yandex.Cloud
 
-logging:
-  level:
-    org:
-      springframework:
-        jdbc: debug
 spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
