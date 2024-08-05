@@ -1,6 +1,6 @@
 package com.example.controller;
 
-import com.example.client.payload.Translation;
+import com.example.client.payload.TranslationPayload;
 import com.example.controller.payload.TranslationRequestPayload;
 import com.example.exceptions.InvalidLanguageCodeException;
 import com.example.exceptions.ProcessedSymbolsLimitException;
@@ -30,9 +30,9 @@ public class TranslationRestController {
     private final TranslationService translationService;
 
     @PostMapping
-    public ResponseEntity<Translation> translateText(@Valid @RequestBody TranslationRequestPayload payload,
-                                                     BindingResult bindingResult,
-                                                     HttpServletRequest request)
+    public ResponseEntity<TranslationPayload> translateText(@Valid @RequestBody TranslationRequestPayload payload,
+                                                            BindingResult bindingResult,
+                                                            HttpServletRequest request)
             throws BindException, InvalidLanguageCodeException, ProcessedSymbolsLimitException {
         if (bindingResult.hasErrors()) {
             if (bindingResult instanceof BindException exception) {
@@ -43,14 +43,11 @@ public class TranslationRestController {
         }
 
         var response = this.translationService.translate(
+                request.getRemoteAddr(),
+                Timestamp.from(Instant.now()),
                 payload.sourceLanguageCode().toLowerCase(),
                 payload.targetLanguageCode().toLowerCase(),
                 payload.text());
-
-        log.info("Request body: {}", payload);
-        log.info("Client IP is: {}", request.getRemoteAddr());
-        log.info("Current time is: {}", Timestamp.from(Instant.now()));
-        log.info("Response from YC: {}", response);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

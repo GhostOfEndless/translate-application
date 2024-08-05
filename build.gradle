@@ -19,7 +19,10 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web:3.3.2'
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.3.2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc:3.3.2'
+    implementation 'org.postgresql:postgresql:42.7.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.2'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql:10.17.0'
 }
 
 test {

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class AppConfig {
+public class ApplicationConfig {
 
     @Bean
     public String apiKey(@Value("${yandex.cloud.api-key}") String apiKey) {
@@ -34,7 +34,7 @@ public class AppConfig {
     }
 
     @Bean
-    public Integer translationPoolThreads(@Value("${translation.service.threads}") Integer translationPoolThreads) {
+    public Integer translationPoolThreadsNum(@Value("${translation.service.threads}") Integer translationPoolThreads) {
         return translationPoolThreads;
     }
 }

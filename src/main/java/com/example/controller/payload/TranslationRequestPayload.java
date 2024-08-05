@@ -15,7 +15,6 @@ public record TranslationRequestPayload(
         String targetLanguageCode,
 
         @NotBlank(message = "{translation.request.text.is_blank}")
-        @Size(max = 10_000, message = "{translation.request.text.size_invalid}")
         String text
 ) {
 }
