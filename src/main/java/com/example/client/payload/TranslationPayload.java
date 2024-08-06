@@ -1,4 +1,9 @@
 package com.example.client.payload;
 
-public record TranslationPayload(String text) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record TranslationPayload(
+        @JsonProperty("text")
+        String text
+) {
 }
