@@ -64,3 +64,113 @@
       ```
       docker-compose up
       ```
+## Примеры тестовых запросов
+
+Для демонстрации используем утилиту командной строки *curl*,
+но запросы можно также делать из любого другого http клиента.
+Подразумевается, что приложение запущено на локальной машине,
+с которой делаются запросы (*localhost*).
+
+* **Запрос на перевод**
+  * URI: *http://localhost:8080/api/v1/translate*
+  * Метод: *POST*
+  * Тело:
+    ```
+    {
+      "sourceLanguageCode": "<код исходного языка>",
+      "targetLanguageCode": "<код целевого языка>",
+      "text": "<текст>"
+    }
+    ```
+  * **Пример запроса:**
+    ```
+    curl --request POST --json '{
+         "sourceLanguageCode": "en",
+         "targetLanguageCode": "ru",
+         "text": "Hello world"
+      }' http://localhost:8080/api/v1/translate
+    ```
+  * **Пример ответа:**
+    ```
+    {
+      "text": "Здравствуйте мир"
+    }
+    ```
+  * **Обработка ошибок.** Все пользовательские данные валидируются и при ошибках выводятся соответствующие сообщения:
+    ```
+    {
+      "type": "about:blank",
+      "title": "Bad Request",
+      "status": 400,
+      "detail": "Ошибка 400: некорректный запрос",
+      "instance": "/api/v1/translate",
+      "errors": [
+                  "Текст должен быть указан",
+                  "Исходный язык должен быть указан",
+                  "Целевой язык должен быть указан"
+                ]
+    }
+    ```
+
+* **Постраничное отображение истории переводов**
+   * URI: *http://localhost:8080/api/v1/translate/page/{pageNumber}?size={pageSize}*
+   * Метод: *GET*
+   * **Пример запроса:**
+     ```
+     curl --request GET http://localhost:8080/api/v1/translate/page/0
+     ```
+   * **Пример ответа:**
+     ```
+     {
+       "content": [
+                    {
+                      "id": 1, 
+                      "clientIP": "172.18.0.1",
+                      "sourceLanguageCode": "en",
+                      "targetLanguageCode": "ru",
+                      "sourceText": "Hello world",
+                      "translatedText": "Здравствуйте мир",
+                      "requestTimestamp": "2024-08-06 16:08:17.715",
+                      "responseTimestamp": "2024-08-06 16:08:17.943"
+                    }
+                  ],
+       "page": {
+                 "size": 5, 
+                 "number": 0,
+                 "totalElements": 1,
+                 "totalPages": 1
+               }
+     }
+     ```
+
+* **Получение перевода по id**
+   * URI: *http://localhost:8080/api/v1/translate/{translationId}*
+   * Метод: *GET*
+   * **Пример запроса:**
+     ```
+     curl --request GET http://localhost:8080/api/v1/translate/1
+     ```
+   * **Пример ответа:**
+     ```
+     {
+       "id": 1,
+       "clientIP": "172.18.0.1",
+       "sourceLanguageCode": "en",
+       "targetLanguageCode": "ru",
+       "sourceText": "Hello world",
+       "translatedText": "Здравствуйте мир",
+       "requestTimestamp": "2024-08-06 16:08:17.715",
+       "responseTimestamp": "2024-08-06 16:08:17.943"
+     }
+     ```
+   * **Обработка ошибок.** Если пользователь вводит id несуществующего перевода, 
+     API возвращает соответствующую ошибку
+     ```
+     {
+       "type": "about:blank",
+       "title": "Not Found",
+       "status": 404,
+       "detail": "Перевод не найден",
+       "instance": "/api/v1/translate/2"
+     }
+     ```
