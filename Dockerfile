@@ -3,6 +3,7 @@ WORKDIR /opt/app
 COPY gradle/ gradle
 COPY build.gradle settings.gradle gradlew ./
 COPY ./src ./src
+RUN sed -i -e 's/\r$//' gradlew
 RUN ./gradlew --no-daemon clean bootJar
 
 
